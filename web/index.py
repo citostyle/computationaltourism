@@ -19,7 +19,8 @@ def test():
 @app.route("/locations/<place>/<type>")
 def locations(place, type):
 	if(type.lower() == "sightseeing"):
-		type = "Points of Interest"
+		place = "Zurich Main Station"
+		type = "points of interest"
 
 	PLACES_API_KEY = os.environ['PLACES_API_KEY']
 	places = GooglePlaces(PLACES_API_KEY)
