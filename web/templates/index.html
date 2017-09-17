@@ -134,29 +134,10 @@
   <script src="https://js.arcgis.com/3.21/"></script>
 
   <script>
-
-    // utility function to retrieve GET parameters.
-    // used to inject the Esri proxy URL
-    // Found here: https://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
-    function findGetParameter(parameterName) {
-      var result = null,
-          tmp = [];
-      location.search
-          .substr(1)
-          .split("&")
-          .forEach(function (item) {
-            tmp = item.split("=");
-            if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-          });
-      return result;
-    }
-
-
     var Tour; //scope issues
 
     require([
       "esri/map",
-      //"dojo/query",
 
      "esri/Color",
       "esri/graphic",
@@ -167,7 +148,6 @@
       "esri/symbols/SimpleMarkerSymbol",
       "esri/tasks/FeatureSet",
       "esri/tasks/Geoprocessor", 
-//      "dojo/parser",   
 
       // Bootstrap
       "bootstrap/Collapse",
@@ -179,16 +159,14 @@
       "dojo/domReady!"
     ], function(Map, Color, Graphic, InfoTemplate, Point, GraphicsLayer, SimpleLineSymbol, SimpleMarkerSymbol, FeatureSet, Geoprocessor) {
 
-      //parser.parse();
-
       /******************************************************************
        *
-       * Create the map, view and widgets
+       * Create the map
        * 
        ******************************************************************/
 
       var Location = {
-        _city : 'Zurich',
+        _city : 'Technopark,Zurich',
         _start_location : [8.515008, 47.390173], //"Technopark, Zurich"
 
         get_start_location : function() {
@@ -196,23 +174,17 @@
         },
 
         retrieve : function(type) {
-          return [       
-            //[47.365829017045606,8.547008142564577],
-            [47.376124870475834,8.541386166088483,"Movie Restaurant and Bar"],
-            [47.371130573961715,8.537323943141603,"Mövenpick Wein-Bar"],
-            [47.36673426912936,8.536270669098537,"Onyx Bar"],
-            [47.366921279925556,8.533578331853509,"Almodobar – Bar Lounge"],
-            [47.37146139153977,8.542843982403278,"WINGS Airline Bar & Lounge"],
-            [47.37402353517374,8.543610166894538,"Züri Bar"],
-            [47.373077535233875,8.543919324874878,"Tina Bar"],
-            [47.37331675747507,8.531723137142201,"Helvti Bar"],
-            [47.373342,8.543817,"Restaurant Mexikano & Cuban Bar"],             
-            [47.38244149270345,8.540132992324093,"Bar & Lounge 42"],
-            [47.37415195350545,8.536871433630834,"Nippon Sushi Bar"],
-            [47.374204886815136,8.529926149776086,"Sherif's Bar"],
-            [47.367697234571004,8.54575627368673,"Kronenhalle Bar"],
-            [47.375479016798664,8.54339495305972,"Grande Café & Bar"]
-          ];         
+            var result;
+            var url = '/locations/' + this._city + '/' + type;
+            console.log(url);
+            $.getJSON({
+                url: url,
+                success : function (data) {
+                  result = data;
+                },
+                async: false
+            });
+            return result;
          },
 
          // turn location list to a map (name is the key)
@@ -238,21 +210,6 @@
         isZoomSlider : true
       });      
 
-      /******************************************************************
-       *
-       * Synchronize popup and Bootstrap panels
-       * 
-       ******************************************************************/
-
-
-      
-
-      // Panels - undock popup when panel shows
-      /*query(".calcite-panels .panel").on("show.bs.collapse", function(e) {
-        if (mapView.popup.currentDockPosition) {
-          mapView.popup.dockEnabled = false;
-        }
-      }); */
 
       //graphics layer to hold the routes and points
       var gLayer = new GraphicsLayer();
@@ -314,7 +271,7 @@
 
         // Read Proxy API Endpoint URL from GET parameter
         // More info here: https://developers.arcgis.com/javascript/3/jshelp/ags_proxy.html
-        _proxy_url : "https://utility.arcgis.com/usrsvcs/appservices/" + findGetParameter('ProxyKey') + "/rest/services/World/VehicleRoutingProblem/GPServer/SolveVehicleRoutingProblem",
+        _proxy_url : "https://utility.arcgis.com/usrsvcs/appservices/{{ ESRI_PROXY_KEY }}/rest/services/World/VehicleRoutingProblem/GPServer/SolveVehicleRoutingProblem",
         
         // Wrapper around ArcGis Vehicle Routing Problem Service REST API
         _gp : null, // has to be set in the method you use it, I don't get scopes in JS, this cost me, like, 2 hours of my life (in retrospect, probably because it used another attribute of this object)
