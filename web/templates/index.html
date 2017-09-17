@@ -85,7 +85,7 @@
     <div id="panelInputs" class="panel collapse in">
       <div id="headingInputs" class="panel-heading" role="tab">
         <div class="panel-title">
-          <a class="panel-toggle collapsed" role="button" data-toggle="collapse" href="#collapseBasemaps"
+          <a class="panel-toggle collapsed" role="button" data-toggle="collapse" href="#collapseInputs"
             aria-expanded="false" aria-controls="collapseInputs"><span class="glyphicon glyphicon-th-large" aria-hidden="true"></span><span class="panel-label">Let's explore</span></a>
           <a class="panel-close" role="button" data-toggle="collapse" tabindex="0" href="#panelInputs"><span class="esri-icon esri-icon-close" aria-hidden="true"></span></a>
         </div>
@@ -98,17 +98,20 @@
             <option value="sightseeing">Sightseeing</option>
           </select>
 
-          <input type="text" class="form-control" id="startLocationInput" aria-describedby="startLocationInputHelp" placeholder="Start" value="Technopark"> <!-- TODO: remove standard value -->
+          <input type="text" class="form-control" id="startLocationInput" aria-describedby="startLocationInputHelp" placeholder="Start" value="">
 
-          <input type="text" class="form-control" id="endLocationInput" aria-describedby="endLocationInputHelp" placeholder="End" value="Technopark">
+          <input type="text" class="form-control" id="endLocationInput" aria-describedby="endLocationInputHelp" placeholder="End" value="">
 
-          <input type="text" class="form-control" id="time_in_minutesInput" aria-describedby="timeInputHelp" placeholder="How long do you have? (minutes)" value="320">          
+          <input type="text" class="form-control" id="time_in_minutesInput" aria-describedby="timeInputHelp" placeholder="How long do you have? (minutes)" value="">          
+
+          <input type="text" class="form-control" id="stopTimeInput" aria-describedby="timeInputHelp" placeholder="How long are your stops?" value="">          
 
           <button type="button" id="searchButton" onclick="Tour.search()"><span style="color: black">Find Route</span></button>
         </div>
       </div> 
     </div>
   </div>
+
 
 
   <!-- /.calcite-panels -->
@@ -176,7 +179,6 @@
         retrieve : function(type) {
             var result;
             var url = '/locations/' + this._city + '/' + type;
-            console.log(url);
             $.getJSON({
                 url: url,
                 success : function (data) {
@@ -242,12 +244,10 @@
           visitType : '',        // String -> e.g. Bars (search query to any Places API)
           startLocation : '',    // String -> e.g. Technopark (should be translated to Lat/Lng)
           endLocation : '',      // String -> same as startLocation
-          time_in_minutes : 15   // Int    -> e.g. 15 (given in minutes)
+          time_in_minutes : 45,   // Int    -> e.g. 45 (given in minutes)
+          stopTime : 15,         // Int    -> e.g. 15, time you spend at each stop (given in minutes)     
         },
-
-        // Time (in minutes) you want to stop at each location
-        // needs to be input from form, refactor!
-        _stop_time : 35,
+        
 
         // register additional constraints (e.g., I wanna do sightseeing, but also get coffee on the way)
         // A constraint takes a form of a function that is given this object that can be freely manipulated
@@ -281,7 +281,7 @@
             // hard coded for the demo now, build in a lookup later
             location_gps_map = {
               'Technopark' : [47.390173, 8.515008, 'Technopark'],
-              'Zurich HB' : [0, 0, 'Zurich HB']
+              'Zurich HB' : [47.3783, 8.5382, 'Zurich HB']
             }
             lat_lng_name = location_gps_map[location_name];
             // good default ;)
@@ -297,15 +297,22 @@
           this._locations = Location.retrieve(this._basic_constraint_params.visitType);
           this._location_map = Location.toPointMap(this._locations);
 
-          var depots_str = this.ArcGisFeatureWrapper.list_helper(
-            [this.ArcGisFeatureWrapper.point_helper(
-              this._to_lat_lng_name(this._basic_constraint_params.startLocation)
-            )]);
+          var depots = [this.ArcGisFeatureWrapper.point_helper(
+                          this._to_lat_lng_name(this._basic_constraint_params.startLocation)
+                        )]
+          if(this._basic_constraint_params.startLocation != this._basic_constraint_params.endLocation) {
+            depots.push(this.ArcGisFeatureWrapper.point_helper(
+                          this._to_lat_lng_name(this._basic_constraint_params.endLocation)
+                        ))
+          }
+          var depots_str = this.ArcGisFeatureWrapper.list_helper(depots);
+
+
       
           var orders_features = [];
           for(var i=0; i < this._locations.length; i++) {
             var location = this._locations[i];
-            var stop_time_str = '"ServiceTime" : ' + this._stop_time;
+            var stop_time_str = '"ServiceTime" : ' + this._basic_constraint_params.stopTime;
             var location_str = this.ArcGisFeatureWrapper.point_helper(location, stop_time_str);
             orders_features.push(location_str);       
           }
