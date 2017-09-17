@@ -1,8 +1,6 @@
 # CityExplorer - A prototype for Computational Tourism
 A HackZurich project by [Jurgen Cito](https://github.com/citostyle) and [Giovanni Grano](https://github.com/giograno)
 
-## CityExplorer - A prototype for Computational Tourism
-
 Visiting new places is **exciting**! Exactly figuring what you want to visit? _ Not so much _. It means researching different sources of information about sights, cafes, and pubs, figuring out exactly how to get there, and finally how to make all these stops in a constrained time frame. 
 The data on interesting locations is available is out there. APIs like Google Places or Foursquare provide a rich platform to extract what travelers crave. It is just hard to quickly make sense of all of it for the purpose of planning your trip.
 
