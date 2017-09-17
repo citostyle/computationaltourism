@@ -360,7 +360,8 @@
           }
           var orders_str = this.ArcGisFeatureWrapper.list_helper(orders_features);
 
-          travel_mode = this._get_walking_travel_mode();
+
+          var travel_mode = this._get_walking_travel_mode();
 
           // JSON parameters passed to API endpoint
           // Detailed info in the docs: // http://resources.arcgis.com/en/help/arcgis-rest-api/#/Vehicle_Routing_Problem_service/02r3000000n4000000/
@@ -400,9 +401,10 @@
           var graphic;
           for(var i = 0; i < features.length; i++) {
             graphic = new Graphic(features[i].geometry, routesSymbol, features[i].attributes, routesPopup);
+
+            map.setExtent(graphic.geometry.getExtent());
             //zoom to the extent of the graphic
             gLayer.add(graphic);
-
             // construct the current state of locations returned by the solver
             // not super clean because this might lead to inconsistencies since we're constructing values, not entities
             coordinates = Tour._location_map[features[i].attributes.Name]
@@ -411,7 +413,7 @@
               Tour._state.locations.push(returned_location);
             }
           }
-          map.setExtent(graphic.geometry.getExtent());        
+                  
         },
 
         _show_stops : function(results) {
@@ -457,9 +459,10 @@
         ArcGisFeatureWrapper : {
           // awkfard helper functions to construct the JSON parameters... refactor!!
           point_helper : function(location, options) {
-            options = this._parse_options(options);            
+            options = this._parse_options(options);
+            escaped_location_name = location[2].replace('"', '\"')            
             return '{"geometry":{"x":'+ location[1] +',"y":'+ location[0] +
-                    '}, "attributes":{"Name": "' + location[2] + '"' + options + '}}';
+                    '}, "attributes":{"Name": "' + escaped_location_name + '"' + options + '}}';
           },
 
           list_helper : function(features, options) {
